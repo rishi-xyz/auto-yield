@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { LayoutDashboard, TrendingUp, Wallet, Gift, Settings, Menu, X } from "lucide-react"
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Strategies", href: "/strategies", icon: TrendingUp },
   { name: "Portfolio", href: "/portfolio", icon: Wallet },
   { name: "Rewards", href: "/rewards", icon: Gift },
@@ -40,6 +40,7 @@ export function Sidebar() {
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
+          <Link href={"/"}>
           <div className="flex items-center px-6 py-6">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -48,6 +49,7 @@ export function Sidebar() {
               <span className="text-xl font-bold text-sidebar-foreground font-sans">AutoYield</span>
             </div>
           </div>
+          </Link>
 
           {/* Navigation */}
           <nav className="flex-1 px-4 space-y-2">
