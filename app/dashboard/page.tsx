@@ -27,7 +27,7 @@ export default function DashboardPage() {
             {/* Header Section */}
             <div className="flex flex-col space-y-2">
               <h1 className="text-3xl font-bold text-foreground font-sans">Dashboard</h1>
-              <p className="text-muted-foreground">Welcome back! Here's your staking portfolio overview.</p>
+              <p className="text-muted-foreground">Welcome back! Here&apos;s your staking portfolio overview.</p>
               
               {/* Connection Status Alert */}
               {!isConnected && (
@@ -235,7 +235,7 @@ export default function DashboardPage() {
                   <div className="text-center py-8">
                     <div className="text-muted-foreground">No token balances found</div>
                     <p className="text-sm text-muted-foreground mt-2">
-                      Make sure you're connected to the right network and have tokens
+                      Make sure you&apos;re connected to the right network and have tokens
                     </p>
                   </div>
                 )}

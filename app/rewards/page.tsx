@@ -136,7 +136,7 @@ export default function RewardsPage() {
                           Staking Rewards
                         </CardTitle>
                         <CardDescription>
-                          View and claim your staking rewards. Click "Fetch Rewards" to update.
+                          View and claim your staking rewards. Click &quot;Fetch Rewards&quot; to update.
                         </CardDescription>
                       </div>
                       <Button
@@ -220,7 +220,7 @@ export default function RewardsPage() {
                       </div>
                     ) : (
                       <div className="text-muted-foreground text-sm">
-                        Click "Fetch Rewards" to view your latest staking rewards.
+                        Click &quot;Fetch Rewards&quot; to view your latest staking rewards.
                       </div>
                     )}
                   </CardContent>
