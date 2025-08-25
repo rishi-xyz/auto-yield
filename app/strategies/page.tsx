@@ -41,8 +41,6 @@ const useStake = (setStakeError: (msg: string | null) => void) => {
       setStakeError("Wallet not connected. Please connect your wallet.");
       throw new Error("Wallet not connected");
     }
-    // Convert amount to uandr (assuming input is in ANDR)
-    // 1 ANDR = 1e18 uandr
     const parsed = Number(amount);
     if (isNaN(parsed) || parsed <= 0) {
       setStakeError("Please enter a valid amount greater than 0.");

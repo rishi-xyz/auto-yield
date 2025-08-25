@@ -11,30 +11,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 const portfolioStrategies = [
   {
     id: 1,
-    name: "Stablecoin Farm",
-    deposited: "$5,000.00",
-    currentBalance: "$5,410.50",
-    apy: "8.2%",
-    status: "Active",
-    pnl: "+$410.50",
-    pnlPercent: "+8.21%",
-    isPositive: true,
-    allocation: 45,
-  },
-  {
-    id: 2,
-    name: "LP Vaults",
-    deposited: "$3,500.00",
-    currentBalance: "$4,014.75",
-    apy: "14.7%",
-    status: "Active",
-    pnl: "+$514.75",
-    pnlPercent: "+14.71%",
-    isPositive: true,
-    allocation: 35,
-  },
-  {
-    id: 3,
     name: "ETH Staking Plus",
     deposited: "$2,000.00",
     currentBalance: "$2,136.00",
@@ -43,8 +19,22 @@ const portfolioStrategies = [
     pnl: "+$136.00",
     pnlPercent: "+6.80%",
     isPositive: true,
-    allocation: 20,
+    allocation: 100,
   },
+]
+
+// Coming soon strategies (not yet available for investment)
+const comingSoonStrategies = [
+  {
+    id: 2,
+    name: "Euclid Staking",
+    description: "Stay tuned for new yield strategies launching soon.",
+    apy: "TBD",
+    risk: "TBD",
+    tvl: "TBD",
+    category: "Coming Soon",
+    isActive: false,
+  }
 ]
 
 const totalDeposited = portfolioStrategies.reduce((sum, strategy) => {
@@ -128,7 +118,7 @@ export default function PortfolioPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-foreground">{portfolioStrategies.length}</div>
-                  <p className="text-xs text-muted-foreground">Diversified positions</p>
+                  <p className="text-xs text-muted-foreground">Active position</p>
                 </CardContent>
               </Card>
             </div>
@@ -150,6 +140,16 @@ export default function PortfolioPage() {
                       <span className="text-muted-foreground">{strategy.allocation}%</span>
                     </div>
                     <Progress value={strategy.allocation} className="h-2" />
+                  </div>
+                ))}
+                {/* Show coming soon strategies as disabled */}
+                {comingSoonStrategies.map((strategy) => (
+                  <div key={strategy.id} className="space-y-2 opacity-60">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium text-muted-foreground">{strategy.name}</span>
+                      <span className="text-muted-foreground">Coming Soon</span>
+                    </div>
+                    <Progress value={0} className="h-2 bg-muted" />
                   </div>
                 ))}
               </CardContent>
@@ -225,6 +225,37 @@ export default function PortfolioPage() {
               </CardContent>
             </Card>
 
+            {/* Coming Soon Strategies */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Coming Soon</CardTitle>
+                <CardDescription>New strategies that will be available soon</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {comingSoonStrategies.map((strategy) => (
+                    <div key={strategy.id} className="p-4 border rounded-lg bg-muted/30">
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className="font-medium text-muted-foreground">{strategy.name}</h4>
+                        <Badge variant="outline" className="text-xs bg-muted text-muted-foreground">
+                          Coming Soon
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">{strategy.description}</p>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" disabled className="flex-1">
+                          Notify Me
+                        </Button>
+                        <Button variant="outline" size="sm" disabled className="flex-1">
+                          Learn More
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Performance Analytics */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
@@ -235,11 +266,11 @@ export default function PortfolioPage() {
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Best Performing Strategy</span>
-                    <span className="font-semibold">LP Vaults (+14.71%)</span>
+                    <span className="font-semibold">ETH Staking Plus (+6.80%)</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Average APY</span>
-                    <span className="font-semibold text-primary">9.9%</span>
+                    <span className="font-semibold text-primary">6.8%</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Portfolio Age</span>
@@ -247,8 +278,8 @@ export default function PortfolioPage() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Risk Score</span>
-                    <Badge variant="outline" className="text-yellow-600 border-yellow-200">
-                      Medium
+                    <Badge variant="outline" className="text-green-600 border-green-200">
+                      Low
                     </Badge>
                   </div>
                 </CardContent>
@@ -262,11 +293,11 @@ export default function PortfolioPage() {
                 <CardContent className="space-y-3">
                   <Button className="w-full" size="lg">
                     <TrendingUp className="mr-2 h-4 w-4" />
-                    Add New Strategy
+                    Add to Staking
                   </Button>
                   <Button variant="outline" className="w-full bg-transparent" size="lg">
                     <Wallet className="mr-2 h-4 w-4" />
-                    Rebalance Portfolio
+                    Withdraw Funds
                   </Button>
                   <Button variant="outline" className="w-full bg-transparent" size="lg">
                     <ArrowUpRight className="mr-2 h-4 w-4" />
