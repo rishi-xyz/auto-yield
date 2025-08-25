@@ -1,74 +1,15 @@
+"use client"
+
+import { useState } from "react"
 import { Sidebar } from "@/components/ui/sidebar"
 import { Navbar } from "@/components/ui/navbar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { TrendingUp, Shield, Zap, Search, Filter } from "lucide-react"
-
-const strategies = [
-  {
-    id: 1,
-    name: "Euclid Protocol",
-    description: "Cross-chain yield optimization with automated rebalancing across multiple DeFi protocols.",
-    apy: "18.5%",
-    risk: "High",
-    tvl: "$2.4M",
-    category: "Cross-chain",
-    isActive: true,
-  },
-  {
-    id: 2,
-    name: "Stablecoin Farm",
-    description: "Low-risk yield farming focused on USDC, USDT, and DAI with consistent returns.",
-    apy: "8.2%",
-    risk: "Low",
-    tvl: "$12.8M",
-    category: "Stablecoin",
-    isActive: true,
-  },
-  {
-    id: 3,
-    name: "LP Vaults",
-    description: "Automated liquidity provision across top DEXs with impermanent loss protection.",
-    apy: "14.7%",
-    risk: "Medium",
-    tvl: "$5.6M",
-    category: "Liquidity",
-    isActive: true,
-  },
-  {
-    id: 4,
-    name: "ETH Staking Plus",
-    description: "Enhanced ETH staking with additional yield from lending and DeFi strategies.",
-    apy: "6.8%",
-    risk: "Low",
-    tvl: "$18.2M",
-    category: "Staking",
-    isActive: true,
-  },
-  {
-    id: 5,
-    name: "Arbitrage Optimizer",
-    description: "High-frequency arbitrage opportunities across multiple chains and protocols.",
-    apy: "22.1%",
-    risk: "High",
-    tvl: "$3.1M",
-    category: "Arbitrage",
-    isActive: true,
-  },
-  {
-    id: 6,
-    name: "Blue Chip Lending",
-    description: "Conservative lending strategy focused on established protocols like Aave and Compound.",
-    apy: "5.4%",
-    risk: "Low",
-    tvl: "$8.9M",
-    category: "Lending",
-    isActive: true,
-  },
-]
+import { Shield } from "lucide-react"
+import useAndromedaClient from "@/lib/andrjs/hooks/useAndromedaClient"
+import { multiExecuteContract } from "@/lib/andrjs/functions";
 
 function getRiskColor(risk: string) {
   switch (risk) {
@@ -87,23 +28,122 @@ function getRiskIcon(risk: string) {
   switch (risk) {
     case "Low":
       return <Shield className="h-4 w-4" />
-    case "Medium":
-      return <TrendingUp className="h-4 w-4" />
-    case "High":
-      return <Zap className="h-4 w-4" />
     default:
       return <Shield className="h-4 w-4" />
   }
 }
 
+// Staking function that takes amount as argument
+const useStake = (setStakeError: (msg: string | null) => void) => {
+  const client = useAndromedaClient();
+  return async (amount: string) => {
+    if (!client) {
+      setStakeError("Wallet not connected. Please connect your wallet.");
+      throw new Error("Wallet not connected");
+    }
+    // Convert amount to uandr (assuming input is in ANDR)
+    // 1 ANDR = 1e18 uandr
+    const parsed = Number(amount);
+    if (isNaN(parsed) || parsed <= 0) {
+      setStakeError("Please enter a valid amount greater than 0.");
+      throw new Error("Invalid amount");
+    }
+    const uandrAmount = BigInt(Math.floor(parsed * 1e6)).toString();
+    try {
+      await multiExecuteContract(client, [{
+        contractAddress: "andr1lm9e8ljtk0apejjr0ejzwdzykkmenx4w2fphsyg5zzhpq05jlqxq9yljd2",
+        msg: {
+          stake: {
+          },
+        },
+        funds: [
+          {
+            amount: uandrAmount,
+            denom: "uandr"
+          }
+        ]
+      }]);
+    } catch (e: any) {
+      console.error(e);
+      // Handle insufficient funds error and show user-friendly message
+      const errMsg = typeof e?.message === "string" ? e.message : String(e);
+      if (
+        errMsg.includes("insufficient funds") ||
+        errMsg.includes("spendable balance") ||
+        errMsg.includes("smaller than")
+      ) {
+        setStakeError(
+          "Insufficient funds: You do not have enough ANDR tokens in your wallet to stake this amount. Please check your balance and try a smaller amount."
+        );
+      } else if (
+        errMsg.includes("Wallet not connected")
+      ) {
+        setStakeError("Wallet not connected. Please connect your wallet.");
+      } else {
+        setStakeError(
+          "Failed to stake. " +
+          (errMsg ? `Error: ${errMsg}` : "Please try again.")
+        );
+      }
+      throw e;
+    }
+  }
+}
+
 export default function StrategiesPage() {
+  const [stakeAmount, setStakeAmount] = useState("");
+  const [staking, setStaking] = useState(false);
+  const [stakeError, setStakeError] = useState<string | null>(null);
+  const stake = useStake(setStakeError);
+
+  // Only one active strategy: Staking
+  const stakingStrategy = {
+    id: 1,
+    name: "ETH Staking Plus",
+    description: "Enhanced ETH staking with additional yield from lending and DeFi strategies.",
+    apy: "6.8%",
+    risk: "Low",
+    tvl: "$18.2M",
+    category: "Staking",
+    isActive: true,
+  };
+
+  // Coming soon strategies (displayed as disabled)
+  const comingSoonStrategies = [
+    {
+      id: 2,
+      name: "Euclid Staking",
+      description: "Stay tuned for new yield strategies launching soon.",
+      apy: "-",
+      risk: "-",
+      tvl: "-",
+      category: "Coming Soon",
+      isActive: false,
+    }
+  ];
+
+  const handleStake = async () => {
+    setStakeError(null);
+    setStaking(true);
+    try {
+      await stake(stakeAmount);
+      setStakeAmount("");
+    } catch (e: any) {
+      // Error is already set in useStake, but fallback just in case
+      if (!stakeError) {
+        setStakeError("Failed to stake. Please try again.");
+      }
+    }
+    setStaking(false);
+  };
+
   return (
     <div className="flex h-screen bg-background">
       <Sidebar />
       <div className="flex-1 flex flex-col md:ml-64">
         <Navbar />
         <main className="flex-1 p-6 overflow-auto">
-          <div className="max-w-7xl mx-auto space-y-6">
+          <div className="max-w-3xl mx-auto space-y-6">
             {/* Header Section */}
             <div className="flex flex-col space-y-2">
               <h1 className="text-3xl font-bold text-foreground font-sans">Yield Strategies</h1>
@@ -112,55 +152,78 @@ export default function StrategiesPage() {
               </p>
             </div>
 
-            {/* Filters and Search */}
+            {/* Staking Strategy Card */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Filter className="h-5 w-5" />
-                  Filter Strategies
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex-1">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input placeholder="Search strategies..." className="pl-10" />
-                    </div>
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <CardTitle className="text-lg">{stakingStrategy.name}</CardTitle>
+                    <Badge variant="outline" className="text-xs">
+                      {stakingStrategy.category}
+                    </Badge>
                   </div>
-                  <Select>
-                    <SelectTrigger className="w-full md:w-[180px]">
-                      <SelectValue placeholder="Risk Level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Risk Levels</SelectItem>
-                      <SelectItem value="low">Low Risk</SelectItem>
-                      <SelectItem value="medium">Medium Risk</SelectItem>
-                      <SelectItem value="high">High Risk</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select>
-                    <SelectTrigger className="w-full md:w-[180px]">
-                      <SelectValue placeholder="Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      <SelectItem value="stablecoin">Stablecoin</SelectItem>
-                      <SelectItem value="liquidity">Liquidity</SelectItem>
-                      <SelectItem value="staking">Staking</SelectItem>
-                      <SelectItem value="lending">Lending</SelectItem>
-                      <SelectItem value="arbitrage">Arbitrage</SelectItem>
-                      <SelectItem value="cross-chain">Cross-chain</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Badge className={`${getRiskColor(stakingStrategy.risk)} flex items-center gap-1`}>
+                    {getRiskIcon(stakingStrategy.risk)}
+                    {stakingStrategy.risk}
+                  </Badge>
                 </div>
+                <CardDescription className="text-sm leading-relaxed">{stakingStrategy.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Strategy Metrics */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-muted rounded-lg">
+                    <p className="text-2xl font-bold text-primary">{stakingStrategy.apy}</p>
+                    <p className="text-xs text-muted-foreground">Current APY</p>
+                  </div>
+                  <div className="text-center p-3 bg-muted rounded-lg">
+                    <p className="text-lg font-semibold text-foreground">{stakingStrategy.tvl}</p>
+                    <p className="text-xs text-muted-foreground">Total Value Locked</p>
+                  </div>
+                </div>
+                {/* Stake Form */}
+                <form
+                  className="flex flex-col gap-2"
+                  onSubmit={e => {
+                    e.preventDefault();
+                    handleStake();
+                  }}
+                >
+                  <div className="flex gap-2 items-center">
+                    <Input
+                      type="number"
+                      min="0"
+                      step="any"
+                      placeholder="Amount to stake (ANDR)"
+                      value={stakeAmount}
+                      onChange={e => setStakeAmount(e.target.value)}
+                      className="flex-1"
+                      disabled={staking}
+                    />
+                    <Button
+                      className="flex-none"
+                      size="sm"
+                      type="submit"
+                      disabled={staking || !stakeAmount || Number(stakeAmount) <= 0}
+                      onClick={e => {
+                        e.preventDefault();
+                        handleStake();
+                      }}
+                    >
+                      {staking ? "Staking..." : "Stake"}
+                    </Button>
+                  </div>
+                  {stakeError && (
+                    <div className="text-sm text-red-600">{stakeError}</div>
+                  )}
+                </form>
               </CardContent>
             </Card>
 
-            {/* Strategies Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {strategies.map((strategy) => (
-                <Card key={strategy.id} className="hover:shadow-lg transition-shadow duration-200">
+            {/* Coming Soon Strategies */}
+            <div className="grid grid-cols-1 gap-6">
+              {comingSoonStrategies.map((strategy) => (
+                <Card key={strategy.id} className="opacity-60 pointer-events-none">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
@@ -169,15 +232,13 @@ export default function StrategiesPage() {
                           {strategy.category}
                         </Badge>
                       </div>
-                      <Badge className={`${getRiskColor(strategy.risk)} flex items-center gap-1`}>
-                        {getRiskIcon(strategy.risk)}
+                      <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300 flex items-center gap-1">
                         {strategy.risk}
                       </Badge>
                     </div>
                     <CardDescription className="text-sm leading-relaxed">{strategy.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {/* Strategy Metrics */}
                     <div className="grid grid-cols-2 gap-4">
                       <div className="text-center p-3 bg-muted rounded-lg">
                         <p className="text-2xl font-bold text-primary">{strategy.apy}</p>
@@ -188,13 +249,11 @@ export default function StrategiesPage() {
                         <p className="text-xs text-muted-foreground">Total Value Locked</p>
                       </div>
                     </div>
-
-                    {/* Action Buttons */}
                     <div className="flex gap-2">
-                      <Button className="flex-1" size="sm">
+                      <Button className="flex-1" size="sm" disabled>
                         Deposit
                       </Button>
-                      <Button variant="outline" className="flex-1 bg-transparent" size="sm">
+                      <Button variant="outline" className="flex-1 bg-transparent" size="sm" disabled>
                         Details
                       </Button>
                     </div>
@@ -202,34 +261,6 @@ export default function StrategiesPage() {
                 </Card>
               ))}
             </div>
-
-            {/* Strategy Performance Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Strategy Performance Overview</CardTitle>
-                <CardDescription>Key metrics across all available strategies</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="text-center p-4 bg-muted rounded-lg">
-                    <p className="text-2xl font-bold text-primary">12.8%</p>
-                    <p className="text-sm text-muted-foreground">Average APY</p>
-                  </div>
-                  <div className="text-center p-4 bg-muted rounded-lg">
-                    <p className="text-2xl font-bold text-foreground">$51.0M</p>
-                    <p className="text-sm text-muted-foreground">Total TVL</p>
-                  </div>
-                  <div className="text-center p-4 bg-muted rounded-lg">
-                    <p className="text-2xl font-bold text-accent">6</p>
-                    <p className="text-sm text-muted-foreground">Active Strategies</p>
-                  </div>
-                  <div className="text-center p-4 bg-muted rounded-lg">
-                    <p className="text-2xl font-bold text-primary">98.5%</p>
-                    <p className="text-sm text-muted-foreground">Uptime</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </main>
       </div>
