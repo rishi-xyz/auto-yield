@@ -12,7 +12,6 @@ const navigation = [
   { name: "Strategies", href: "/strategies", icon: TrendingUp },
   { name: "Portfolio", href: "/portfolio", icon: Wallet },
   { name: "Rewards", href: "/rewards", icon: Gift },
-  { name: "Settings", href: "/settings", icon: Settings },
 ]
 
 export function Sidebar() {

@@ -11,12 +11,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 const portfolioStrategies = [
   {
     id: 1,
-    name: "ETH Staking Plus",
-    deposited: "$2,000.00",
-    currentBalance: "$2,136.00",
+    name: "ANDR Staking Plus",
+    deposited: "1000 ANDR",
+    currentBalance: "1000 ANDR",
     apy: "6.8%",
     status: "Active",
-    pnl: "+$136.00",
+    pnl: "+100 ANDR",
     pnlPercent: "+6.80%",
     isPositive: true,
     allocation: 100,
@@ -82,7 +82,7 @@ export default function PortfolioPage() {
                   <Wallet className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-foreground">${totalDeposited.toLocaleString()}</div>
+                  <div className="text-2xl font-bold text-foreground">{totalDeposited.toLocaleString()} ANDR</div>
                   <p className="text-xs text-muted-foreground">Initial investment</p>
                 </CardContent>
               </Card>
@@ -266,7 +266,7 @@ export default function PortfolioPage() {
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Best Performing Strategy</span>
-                    <span className="font-semibold">ETH Staking Plus (+6.80%)</span>
+                    <span className="font-semibold">ANDR Staking Plus (+6.80%)</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Average APY</span>

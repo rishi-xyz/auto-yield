@@ -27,7 +27,7 @@ export default function DashboardPage() {
             {/* Header Section */}
             <div className="flex flex-col space-y-2">
               <h1 className="text-3xl font-bold text-foreground font-sans">Dashboard</h1>
-              <p className="text-muted-foreground">Welcome back! Here's your DeFi portfolio overview.</p>
+              <p className="text-muted-foreground">Welcome back! Here's your staking portfolio overview.</p>
               
               {/* Connection Status Alert */}
               {!isConnected && (
@@ -148,14 +148,14 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-accent">
-                    {isConnected ? '$1,234.56' : 'Connect Wallet'}
+                    {isConnected ? '0 ANDR' : 'Connect Wallet'}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {isConnected ? (
-                      <span className="text-accent">+12.3%</span>
+                      <span className="text-accent">+6.8%</span>
                     ) : (
                       'View rewards'
-                    )} this week
+                    )} APY from staking
                   </p>
                   {isConnected && <p className="text-xs text-accent mt-2">Click to claim rewards →</p>}
                 </CardContent>
@@ -168,10 +168,10 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-foreground">
-                    {isConnected ? '3' : '0'}
+                    {isConnected ? '1' : '0'}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {isConnected ? '2 high yield, 1 stable' : 'No strategies active'}
+                    {isConnected ? 'ANDR Staking Plus' : 'No strategies active'}
                   </p>
                   {isConnected && <p className="text-xs text-primary mt-2">Click to manage strategies →</p>}
                 </CardContent>
@@ -184,10 +184,10 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-primary">
-                    {isConnected ? '12.5%' : '0%'}
+                    {isConnected ? '6.8%' : '0%'}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {isConnected ? 'Across all strategies' : 'No strategies active'}
+                    {isConnected ? 'ANDR Staking Plus' : 'No strategies active'}
                   </p>
                   {isConnected && <p className="text-xs text-primary mt-2">Click to optimize APY →</p>}
                 </CardContent>
@@ -248,7 +248,7 @@ export default function DashboardPage() {
               <Card className="lg:col-span-2">
                 <CardHeader>
                   <CardTitle>Yield Growth Over Time</CardTitle>
-                  <CardDescription>Your portfolio performance in the last 30 days</CardDescription>
+                  <CardDescription>Your staking rewards accumulation over time</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <YieldChart />
@@ -299,7 +299,7 @@ export default function DashboardPage() {
                   <Gift className="h-5 w-5" />
                   Claimable Rewards
                 </CardTitle>
-                <CardDescription>Your pending rewards from active strategies</CardDescription>
+                <CardDescription>Your pending staking rewards</CardDescription>
               </CardHeader>
               <CardContent>
                 {!isConnected ? (
@@ -312,28 +312,23 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                         <div>
-                          <p className="text-sm text-muted-foreground">USDC Rewards</p>
-                          <p className="text-lg font-semibold">$45.23</p>
+                          <p className="text-sm text-muted-foreground">ANDR Staking Rewards</p>
+                          <p className="text-lg font-semibold">0 ANDR</p>
+                          <p className="text-xs text-muted-foreground">Click Fetch Rewards to update</p>
                         </div>
-                        <Button size="sm" onClick={() => router.push('/rewards')}>Claim</Button>
+                        <Button size="sm" onClick={() => router.push('/rewards')}>Fetch & Claim</Button>
                       </div>
                       <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                         <div>
-                          <p className="text-sm text-muted-foreground">ETH Rewards</p>
-                          <p className="text-lg font-semibold">0.0234 ETH</p>
+                          <p className="text-sm text-muted-foreground">Total Staked</p>
+                          <p className="text-lg font-semibold">1000 ANDR</p>
+                          <p className="text-xs text-muted-foreground">Active staking position</p>
                         </div>
-                        <Button size="sm" onClick={() => router.push('/rewards')}>Claim</Button>
-                      </div>
-                      <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Loyalty Points</p>
-                          <p className="text-lg font-semibold">1,250 pts</p>
-                        </div>
-                        <Button size="sm" variant="outline" onClick={() => router.push('/rewards')}>
-                          View
+                        <Button size="sm" variant="outline" onClick={() => router.push('/portfolio')}>
+                          View Portfolio
                         </Button>
                       </div>
                     </div>
@@ -366,24 +361,11 @@ export default function DashboardPage() {
                   <>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span>Stablecoin Farming</span>
-                        <span>45%</span>
+                        <span>ANDR Staking Plus</span>
+                        <span>100%</span>
                       </div>
-                      <Progress value={45} className="h-2" />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>LP Vaults</span>
-                        <span>35%</span>
-                      </div>
-                      <Progress value={35} className="h-2" />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Lending Protocols</span>
-                        <span>20%</span>
-                      </div>
-                      <Progress value={20} className="h-2" />
+                      <Progress value={100} className="h-2" />
+                      <p className="text-xs text-muted-foreground">6.8% APY • Active strategy</p>
                     </div>
                     <div className="pt-4 text-center">
                       <p className="text-xs text-primary">Click to view detailed portfolio analysis →</p>
@@ -392,8 +374,6 @@ export default function DashboardPage() {
                 )}
               </CardContent>
             </Card>
-
-
           </div>
         </main>
       </div>
