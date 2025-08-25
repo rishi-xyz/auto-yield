@@ -27,12 +27,12 @@ export function YieldChart() {
             dataKey="date"
             axisLine={false}
             tickLine={false}
-            tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+            tick={{ fontSize: 12, fill: "white" }}
           />
           <YAxis
             axisLine={false}
             tickLine={false}
-            tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+            tick={{ fontSize: 12, fill: "white" }}
             tickFormatter={(value) => `$${value}`}
           />
           <Tooltip
@@ -51,9 +51,9 @@ export function YieldChart() {
           <Area
             type="monotone"
             dataKey="yield"
-            stroke="hsl(var(--primary))"
+            stroke="blue"
             strokeWidth={2}
-            fill="url(#yieldGradient)"
+            fill="primary"
           />
         </AreaChart>
       </ResponsiveContainer>

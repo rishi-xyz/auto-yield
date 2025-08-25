@@ -1,3 +1,5 @@
+"use client"
+
 import { Sidebar } from "@/components/ui/sidebar"
 import { Navbar } from "@/components/ui/navbar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -6,8 +8,15 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { YieldChart } from "@/components/ui/yield-chart"
 import { TrendingUp, Wallet, DollarSign, Target, Gift, ArrowUpRight } from "lucide-react"
+import { useAndromedaStore } from "@/zustand/andromeda"
+import useGetAllBalances from "@/lib/andrjs/hooks/useGetAllBalances"
+import { useRouter } from "next/navigation"
 
 export default function DashboardPage() {
+  const { accounts, isConnected, client } = useAndromedaStore();
+  const connectedAddress = accounts[0]?.address;
+  const { balances, totalValue, isLoading: balancesLoading } = useGetAllBalances(connectedAddress);
+  const router = useRouter();
   return (
     <div className="flex h-screen bg-background">
       <Sidebar />
@@ -19,6 +28,35 @@ export default function DashboardPage() {
             <div className="flex flex-col space-y-2">
               <h1 className="text-3xl font-bold text-foreground font-sans">Dashboard</h1>
               <p className="text-muted-foreground">Welcome back! Here's your DeFi portfolio overview.</p>
+              
+              {/* Connection Status Alert */}
+              {!isConnected && (
+                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    <p className="text-yellow-700 dark:text-yellow-400 font-medium">
+                      Wallet Not Connected
+                    </p>
+                  </div>
+                  <p className="text-yellow-600 dark:text-yellow-300 text-sm mt-1">
+                    Please connect your wallet to view your token balances and portfolio information.
+                  </p>
+                </div>
+              )}
+              
+              {isConnected && !client && (
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <p className="text-blue-700 dark:text-blue-400 font-medium">
+                      Connecting to Chain
+                    </p>
+                  </div>
+                  <p className="text-blue-600 dark:text-blue-300 text-sm mt-1">
+                    Establishing connection to the blockchain. This may take a few moments.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Wallet Info Card */}
@@ -31,68 +69,178 @@ export default function DashboardPage() {
                 <CardDescription>Your current wallet information</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Address</p>
-                    <p className="font-mono text-lg">0x1234...5678</p>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Address</p>
+                      <p className="font-mono text-lg">{connectedAddress || 'Not connected'}</p>
+                    </div>
+                    {isConnected ? (
+                      <Badge variant="secondary" className="bg-primary/10 text-primary" size={"lg"}>
+                        Connected
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="bg-primary/10 text-primary" size={"lg"}>
+                        Not Connected
+                      </Badge>
+                    )}
                   </div>
-                  <Badge variant="secondary" className="bg-primary/10 text-primary">
-                    Connected
-                  </Badge>
+                  
+                  {connectedAddress && (
+                    <div className="pt-4 border-t border-border">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Connection Status</p>
+                          <p className="font-medium">{isConnected ? 'Active' : 'Inactive'}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Balances Loading</p>
+                          <p className="font-medium">{balancesLoading ? 'Yes' : 'No'}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Token Types Found</p>
+                          <p className="font-medium">{balances.length}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Total Value</p>
+                          <p className="font-medium">{totalValue}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card>
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/portfolio')}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-primary">$12,345.67</div>
+                  <div className="text-2xl font-bold text-primary">
+                    {balancesLoading ? (
+                      <span className="text-muted-foreground">Loading...</span>
+                    ) : balances.length > 0 ? (
+                      `${totalValue} tokens`
+                    ) : (
+                      <span className="text-muted-foreground">0 tokens</span>
+                    )}
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-primary">+2.5%</span> from last month
+                    {balances.length > 0 ? `${balances.length} token types` : 'No tokens found'}
                   </p>
+                  {balances.length === 0 && !balancesLoading && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {!isConnected ? 'Connect wallet to view balances' : 'No token balances found'}
+                    </p>
+                  )}
+                  <p className="text-xs text-primary mt-2">Click to view portfolio →</p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/rewards')}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Yield Earned</CardTitle>
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-accent">$1,234.56</div>
+                  <div className="text-2xl font-bold text-accent">
+                    {isConnected ? '$1,234.56' : 'Connect Wallet'}
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-accent">+12.3%</span> this week
+                    {isConnected ? (
+                      <span className="text-accent">+12.3%</span>
+                    ) : (
+                      'View rewards'
+                    )} this week
                   </p>
+                  {isConnected && <p className="text-xs text-accent mt-2">Click to claim rewards →</p>}
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/strategies')}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Active Strategies</CardTitle>
                   <Target className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-foreground">3</div>
-                  <p className="text-xs text-muted-foreground">2 high yield, 1 stable</p>
+                  <div className="text-2xl font-bold text-foreground">
+                    {isConnected ? '3' : '0'}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {isConnected ? '2 high yield, 1 stable' : 'No strategies active'}
+                  </p>
+                  {isConnected && <p className="text-xs text-primary mt-2">Click to manage strategies →</p>}
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/strategies')}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Average APY</CardTitle>
                   <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-primary">12.5%</div>
-                  <p className="text-xs text-muted-foreground">Across all strategies</p>
+                  <div className="text-2xl font-bold text-primary">
+                    {isConnected ? '12.5%' : '0%'}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {isConnected ? 'Across all strategies' : 'No strategies active'}
+                  </p>
+                  {isConnected && <p className="text-xs text-primary mt-2">Click to optimize APY →</p>}
                 </CardContent>
               </Card>
             </div>
+
+            {/* Token Balances */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Wallet className="h-5 w-5" />
+                  Token Balances
+                </CardTitle>
+                <CardDescription>Your current token holdings</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {balancesLoading ? (
+                  <div className="text-center py-8">
+                    <div className="text-muted-foreground">Loading balances...</div>
+                  </div>
+                ) : balances.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {balances.map((balance, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            {balance.type === 'cw20' ? 'CW20 Token' : balance.denom}
+                          </p>
+                          <p className="text-lg font-semibold">
+                            {parseFloat(balance.amount).toLocaleString()} {balance.denom}
+                          </p>
+                          {balance.contractAddress && (
+                            <p className="text-xs text-muted-foreground">
+                              Contract: {balance.contractAddress.slice(0, 8)}...{balance.contractAddress.slice(-6)}
+                            </p>
+                          )}
+                        </div>
+                        <Badge variant={balance.type === 'cw20' ? 'secondary' : 'default'}>
+                          {balance.type.toUpperCase()}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="text-muted-foreground">No token balances found</div>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Make sure you're connected to the right network and have tokens
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Chart and Quick Actions */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -114,15 +262,29 @@ export default function DashboardPage() {
                   <CardDescription>Manage your DeFi portfolio</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Button className="w-full" size="lg">
+                  <Button 
+                    className="w-full" 
+                    size="lg"
+                    onClick={() => router.push('/strategies')}
+                  >
                     <TrendingUp className="mr-2 h-4 w-4" />
                     Explore Strategies
                   </Button>
-                  <Button variant="outline" className="w-full bg-transparent" size="lg">
+                  <Button 
+                    variant="outline" 
+                    className="w-full bg-transparent" 
+                    size="lg"
+                    onClick={() => router.push('/rewards')}
+                  >
                     <Gift className="mr-2 h-4 w-4" />
                     Claim Rewards
                   </Button>
-                  <Button variant="outline" className="w-full bg-transparent" size="lg">
+                  <Button 
+                    variant="outline" 
+                    className="w-full bg-transparent" 
+                    size="lg"
+                    onClick={() => router.push('/portfolio')}
+                  >
                     <Wallet className="mr-2 h-4 w-4" />
                     View Portfolio
                   </Button>
@@ -140,64 +302,98 @@ export default function DashboardPage() {
                 <CardDescription>Your pending rewards from active strategies</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                    <div>
-                      <p className="text-sm text-muted-foreground">USDC Rewards</p>
-                      <p className="text-lg font-semibold">$45.23</p>
-                    </div>
-                    <Button size="sm">Claim</Button>
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                    <div>
-                      <p className="text-sm text-muted-foreground">ETH Rewards</p>
-                      <p className="text-lg font-semibold">0.0234 ETH</p>
-                    </div>
-                    <Button size="sm">Claim</Button>
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Loyalty Points</p>
-                      <p className="text-lg font-semibold">1,250 pts</p>
-                    </div>
-                    <Button size="sm" variant="outline">
-                      View
+                {!isConnected ? (
+                  <div className="text-center py-8">
+                    <Gift className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground mb-4">Connect your wallet to view claimable rewards</p>
+                    <Button onClick={() => router.push('/rewards')}>
+                      View All Rewards
                     </Button>
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                        <div>
+                          <p className="text-sm text-muted-foreground">USDC Rewards</p>
+                          <p className="text-lg font-semibold">$45.23</p>
+                        </div>
+                        <Button size="sm" onClick={() => router.push('/rewards')}>Claim</Button>
+                      </div>
+                      <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                        <div>
+                          <p className="text-sm text-muted-foreground">ETH Rewards</p>
+                          <p className="text-lg font-semibold">0.0234 ETH</p>
+                        </div>
+                        <Button size="sm" onClick={() => router.push('/rewards')}>Claim</Button>
+                      </div>
+                      <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Loyalty Points</p>
+                          <p className="text-lg font-semibold">1,250 pts</p>
+                        </div>
+                        <Button size="sm" variant="outline" onClick={() => router.push('/rewards')}>
+                          View
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="text-center pt-4">
+                      <Button variant="outline" onClick={() => router.push('/rewards')}>
+                        View All Available Rewards
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
             {/* Portfolio Diversification */}
-            <Card>
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/portfolio')}>
               <CardHeader>
                 <CardTitle>Portfolio Diversification</CardTitle>
                 <CardDescription>How your assets are distributed across strategies</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Stablecoin Farming</span>
-                    <span>45%</span>
+                {!isConnected ? (
+                  <div className="text-center py-6">
+                    <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground mb-4">Connect your wallet to view portfolio allocation</p>
+                    <Button onClick={() => router.push('/portfolio')}>
+                      View Portfolio
+                    </Button>
                   </div>
-                  <Progress value={45} className="h-2" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>LP Vaults</span>
-                    <span>35%</span>
-                  </div>
-                  <Progress value={35} className="h-2" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Lending Protocols</span>
-                    <span>20%</span>
-                  </div>
-                  <Progress value={20} className="h-2" />
-                </div>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Stablecoin Farming</span>
+                        <span>45%</span>
+                      </div>
+                      <Progress value={45} className="h-2" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>LP Vaults</span>
+                        <span>35%</span>
+                      </div>
+                      <Progress value={35} className="h-2" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Lending Protocols</span>
+                        <span>20%</span>
+                      </div>
+                      <Progress value={20} className="h-2" />
+                    </div>
+                    <div className="pt-4 text-center">
+                      <p className="text-xs text-primary">Click to view detailed portfolio analysis →</p>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
+
+
           </div>
         </main>
       </div>
