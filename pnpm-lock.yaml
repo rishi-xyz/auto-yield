@@ -15,13 +15,19 @@ importers:
         specifier: ^0.32.4
         version: 0.32.4
       '@cosmjs/cosmwasm-stargate':
-        specifier: ^0.32.3
+        specifier: ^0.32.4
         version: 0.32.4
+      '@cosmjs/json-rpc':
+        specifier: ^0.36.0
+        version: 0.36.0
       '@cosmjs/proto-signing':
-        specifier: ^0.32.3
+        specifier: ^0.32.4
         version: 0.32.4
       '@cosmjs/stargate':
-        specifier: ^0.32.3
+        specifier: ^0.32.4
+        version: 0.32.4
+      '@cosmjs/tendermint-rpc':
+        specifier: ^0.32.4
         version: 0.32.4
       '@epic-web/cachified':
         specifier: ^5.5.1
@@ -215,6 +221,9 @@ packages:
   '@cosmjs/json-rpc@0.32.4':
     resolution: {integrity: sha512-/jt4mBl7nYzfJ2J/VJ+r19c92mUKF0Lt0JxM3MXEJl7wlwW5haHAWtzRujHkyYMXOwIR+gBqT2S0vntXVBRyhQ==}
 
+  '@cosmjs/json-rpc@0.36.0':
+    resolution: {integrity: sha512-7cGE8cBFGrtAHsadYWFOWv0bNaK0VPNzquzU/Naj+3twgnppaGbRBrTLw3iwhqrg+Cvb9KwSYPHzaUsavojUWQ==}
+
   '@cosmjs/math@0.32.4':
     resolution: {integrity: sha512-++dqq2TJkoB8zsPVYCvrt88oJWsy1vMOuSOKcdlnXuOA/ASheTJuYy4+oZlTQ3Fr8eALDLGGPhJI02W2HyAQaw==}
 
@@ -229,6 +238,9 @@ packages:
 
   '@cosmjs/stream@0.32.4':
     resolution: {integrity: sha512-Gih++NYHEiP+oyD4jNEUxU9antoC0pFSg+33Hpp0JlHwH0wXhtD3OOKnzSfDB7OIoEbrzLJUpEjOgpCp5Z+W3A==}
+
+  '@cosmjs/stream@0.36.0':
+    resolution: {integrity: sha512-gMezM+symoCWnJlrOJ5lxB+tVNUm9JUwFR3dpHzdccGTh1Sb7oVCf6VFias85O1j0fLkCIfQR2BI/RoX97+CGQ==}
 
   '@cosmjs/tendermint-rpc@0.32.4':
     resolution: {integrity: sha512-MWvUUno+4bCb/LmlMIErLypXxy7ckUuzEmpufYYYd9wgbdCXaTaO08SZzyFM5PI8UJ/0S2AmUrgWhldlbxO8mw==}
@@ -3640,6 +3652,11 @@ snapshots:
       '@cosmjs/stream': 0.32.4
       xstream: 11.14.0
 
+  '@cosmjs/json-rpc@0.36.0':
+    dependencies:
+      '@cosmjs/stream': 0.36.0
+      xstream: 11.14.0
+
   '@cosmjs/math@0.32.4':
     dependencies:
       bn.js: 5.2.2
@@ -3681,6 +3698,10 @@ snapshots:
       - utf-8-validate
 
   '@cosmjs/stream@0.32.4':
+    dependencies:
+      xstream: 11.14.0
+
+  '@cosmjs/stream@0.36.0':
     dependencies:
       xstream: 11.14.0
 
