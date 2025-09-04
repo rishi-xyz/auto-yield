@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Shield } from "lucide-react"
 import useAndromedaClient from "@/lib/andrjs/hooks/useAndromedaClient"
 import { multiExecuteContract } from "@/lib/andrjs/functions";
+import { useStakingStore } from "@/zustand/staking";
 
 function getRiskColor(risk: string) {
   switch (risk) {
@@ -93,12 +94,13 @@ export default function StrategiesPage() {
   const [staking, setStaking] = useState(false);
   const [stakeError, setStakeError] = useState<string | null>(null);
   const stake = useStake(setStakeError);
+  const { stakedAmount, stakedDenom } = useStakingStore();
 
   // Only one active strategy: Staking
   const stakingStrategy = {
     id: 1,
-    name: "ETH Staking Plus",
-    description: "Enhanced ETH staking with additional yield from lending and DeFi strategies.",
+    name: "ANDR Staking Plus",
+    description: "Enhanced ANDR staking with additional yield from lending and DeFi strategies.",
     apy: "6.8%",
     risk: "Low",
     tvl: "$18.2M",
@@ -179,6 +181,16 @@ export default function StrategiesPage() {
                     <p className="text-xs text-muted-foreground">Total Value Locked</p>
                   </div>
                 </div>
+                
+                {/* Staked Amount Display */}
+                {stakedAmount && stakedDenom && (
+                  <div className="text-center p-3 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+                    <p className="text-lg font-semibold text-green-700 dark:text-green-300">
+                      {stakedAmount} {stakedDenom}
+                    </p>
+                    <p className="text-xs text-green-600 dark:text-green-400">Currently Staked</p>
+                  </div>
+                )}
                 {/* Stake Form */}
                 <form
                   className="flex flex-col gap-2"

@@ -11,6 +11,7 @@ import { Gift, Trophy, Coins } from "lucide-react"
 import useAndromedaClient from "@/lib/andrjs/hooks/useAndromedaClient"
 import { queryContract } from "@/lib/andrjs/functions"
 import { useState } from "react"
+import { useStakingStore } from "@/zustand/staking"
 
 // Helper to format uandr to ANDR (assuming 6 decimals)
 function formatUandr(amount: string) {
@@ -24,6 +25,7 @@ export default function RewardsPage() {
   const [rewardsData, setRewardsData] = useState<any | null>(null)
   const [rewardsError, setRewardsError] = useState<string | null>(null)
   const client = useAndromedaClient();
+  const { setStakedAmount } = useStakingStore();
   const fetchRewards = async () => {
     setRewardsLoading(true)
     setRewardsError(null)
@@ -47,6 +49,13 @@ export default function RewardsPage() {
       // { delegator, validator, amount, can_redelegate, accumulated_rewards }
       // So we need to set rewardsData.result = response for the rest of the code to work
       setRewardsData({ result: response, generatedAt: Date.now() })
+      
+      // Store staked amount in global state
+      if (response?.amount?.amount && response?.amount?.denom) {
+        const formattedAmount = formatUandr(response.amount.amount)
+        const formattedDenom = response.amount.denom.replace(/^u/, "").toUpperCase()
+        setStakedAmount(formattedAmount, formattedDenom)
+      }
     } catch (err: any) {
       setRewardsError(err?.message || "Failed to fetch rewards")
     } finally {
@@ -94,7 +103,7 @@ export default function RewardsPage() {
             </div>
 
             {/* Rewards Summary */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Claimable</CardTitle>
@@ -105,17 +114,6 @@ export default function RewardsPage() {
                     {claimableAmount} {claimableDenom}
                   </div>
                   <p className="text-xs text-muted-foreground">Ready to claim</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Lifetime Earned</CardTitle>
-                  <Trophy className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-primary">$2,847.92</div>
-                  <p className="text-xs text-muted-foreground">All-time rewards</p>
                 </CardContent>
               </Card>
             </div>
